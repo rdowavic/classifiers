@@ -6,17 +6,27 @@ import java.util.Arrays;
 
 public class DecisionTreeMaker {
 	
-	public void printTree(Node root, int depth) {
-		Node current = root;
-		
-//		System.out.println("Splitting on " + root.data);
-//		System.out.println("depth " + depth);
-		for (Pair pair : current.children) {
-			// print like label : then data
-//			System.out.println(pair.label + ": " + pair.node.data);
-			printTree(pair.node, depth+1);
-		}
+	private ArrayList<String[]> allExamples;
+	
+	public void printTree(Node root) {
+		System.out.println("--------------------------------------------------------------------");
+		System.out.println("========================== Decision Tree ===========================");
+		System.out.println("--------------------------------------------------------------------");
+		printTree(root, 0);
 		System.out.println();
+	}
+	private void printTree(Node root, int indent) {
+		String offset = "";
+		for (int i = 0; i < indent; i++) offset += "|  ";
+		
+		if (root.children.isEmpty())
+			System.out.print(": " + root.data);
+		else {
+			for (Pair pair : root.children) {
+				System.out.print("\n" + offset + root.data + " = " + pair.label);
+				printTree(pair.node, indent + 1);
+			}
+		}
 	}
 	
 	/**
@@ -37,10 +47,8 @@ public class DecisionTreeMaker {
 		while (!current.children.isEmpty()) {
 			//attribute to follow = current.data
 			String attribute = current.data;
-			System.out.println("Attribute: " + attribute);
 			// choose next 'current' to go to
 			for (Pair branch : current.children) {
-				System.out.println("Branch label: " + branch.label);
 				if (branch.label.equals(example[columnNum(attribute, attributes)])) {
 					current = branch.node;
 					break;
@@ -62,7 +70,11 @@ public class DecisionTreeMaker {
 	}
 	
 	public Node makeDecisionTree(ArrayList<String[]> examples, ArrayList<String> atts) {
-		return makeDecisionTree(examples, atts, atts, null);
+		allExamples = new ArrayList<String[]>(examples);
+		// get rid of class from attributes
+		ArrayList<String> attributesWithoutClass = new ArrayList<String>(atts);
+		attributesWithoutClass.remove("class");
+		return makeDecisionTree(examples, attributesWithoutClass, atts, null);
 	}
 
 	/**
@@ -75,10 +87,11 @@ public class DecisionTreeMaker {
 		// default value is one of these
 		if (examples.isEmpty())
 			return new Node(defaultValue);
-		else if (attributes.isEmpty())
+		else if (attributes.isEmpty()) {
 			return new Node(majorityClass(examples, allAttributes));
+		}
 		else {
-			String best = chooseAttribute(attributes, examples);
+			String best = chooseAttribute(attributes, allAttributes, examples);
 			/*Okay we're sort of recursively making this subtree thing.
 			 *Once we have the best attribute to split on,
 			 *we have to go through all the possible values of that attribute
@@ -88,7 +101,7 @@ public class DecisionTreeMaker {
 			Node tree = new Node(best);
 			int columnBest = columnNum(best, allAttributes);
 			
-			for (String value : allValues(columnBest, examples)) {
+			for (String value : allValues(columnBest, allExamples)) {
 				ArrayList<String[]> childExamples = reducedExamples(examples, columnBest, value);
 				ArrayList<String> attsWithBestRemoved = new ArrayList<String>(attributes);
 				attsWithBestRemoved.remove(best);
@@ -134,12 +147,12 @@ public class DecisionTreeMaker {
 	 * @param examples
 	 * @return
 	 */
-	private String chooseAttribute(ArrayList<String> attributes, ArrayList<String[]> examples) {
+	private String chooseAttribute(ArrayList<String> attributes, ArrayList<String> allAttributes, ArrayList<String[]> examples) {
 		String bestAttr = null;
 		double bestGain = 0;
 		
 		for (String attr : attributes) {
-			double attrGain = informationGain(columnNum(attr, attributes), examples, attributes);
+			double attrGain = informationGain(columnNum(attr, allAttributes), examples, allAttributes);
 			if (attrGain > bestGain || bestAttr == null) {
 				bestAttr = attr;
 				bestGain = attrGain;

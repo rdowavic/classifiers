@@ -33,7 +33,7 @@ public class MyClassifier {
 		}));
 	
 	public static void main(String[] args) {
-		
+
 		if (Arrays.asList(args).contains("--accuracy")) {
 			// the user would write
 			// pima.csv NB --accuracy
@@ -110,7 +110,6 @@ public class MyClassifier {
 				 DecisionTreeMaker d = new DecisionTreeMaker();
 				 Node decisionTree = d.makeDecisionTree(training, atts);
 				 accuracy = d.testAccuracy(decisionTree, atts, testing);
-				 System.out.println("Hello?");
 			 } 
 			 accSum += accuracy;
 			 System.out.println("Fold " + (i+1) +" Accuracy: "+ accuracy);
@@ -162,5 +161,65 @@ public class MyClassifier {
 			}
 		}
 		return fold;
+	}
+	public static void stratifyData(String training) {
+		ArrayList<String[]> yesData = new ArrayList<String[]>();
+		ArrayList<String[]> noData = new ArrayList<String[]>();
+		
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new FileReader(training));
+			String line = "";
+			while((line = reader.readLine()) != null) {
+				String[] dataPoint = line.split(",");
+				if (dataPoint[dataPoint.length-1].equals("yes")) { 
+					yesData.add(dataPoint);
+					//System.out.println("test");
+				} else if (dataPoint[dataPoint.length-1].equals("no")) {
+					noData.add(dataPoint);
+					//System.out.println("test");
+				}
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (reader != null) {
+				try {
+					reader.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		ArrayList<ArrayList<String[]>>buckets = new ArrayList<ArrayList<String[]>>(10);
+		for(int i = 0; i < 10; i++) {
+			buckets.add(i, new ArrayList<String[]>());
+		}
+		
+		// divy out yes data
+		for (int i = 0; i < yesData.size(); i++) {
+			buckets.get(i%10).add(yesData.get(i));
+		}
+		// divy out no data
+		for (int i = 0; i < noData.size(); i++) {
+			buckets.get(i%10).add(noData.get(i));
+		}
+		
+		for (int i = 0; i < 10; i++) {
+			System.out.println("fold" + (i+1));
+			for (int j = 0; j < buckets.get(i).size(); j++) {
+				for (int k = 0; k < buckets.get(i).get(j).length; k++) {
+					if (k < buckets.get(i).get(j).length - 1) {
+						System.out.print(buckets.get(i).get(j)[k] + ",");
+					} else {
+						System.out.println(buckets.get(i).get(j)[k]);
+					}
+				}
+			}
+			System.out.println();
+		}
 	}
 }

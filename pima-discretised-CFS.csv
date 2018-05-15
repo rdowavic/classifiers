@@ -1,4 +1,3 @@
-plasma_glucose_conc,serum_insulin,body_mass_index,diabetes_pedigree_function,age,class
 high,high,high,high,high,yes
 low,high,low,low,high,no
 'very high',high,low,high,high,yes

@@ -33,8 +33,13 @@ public class MyClassifier {
 		}));
 	
 	public static void main(String[] args) {
+		
+		if (Arrays.asList(args).contains("--stratify"))
+			// the user would write
+			// MyClassifier data.csv --stratify
+			stratifyData(args[0]);
 
-		if (Arrays.asList(args).contains("--accuracy")) {
+		else if (Arrays.asList(args).contains("--accuracy")) {
 			// the user would write
 			// pima.csv NB --accuracy
 			crossValidate(args[0], args[1]);

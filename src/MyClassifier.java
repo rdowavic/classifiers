@@ -55,6 +55,10 @@ public class MyClassifier {
 			if (mode.equals("DT")) {
 				DecisionTreeMaker d = new DecisionTreeMaker();
 				Node decisionTree = d.makeDecisionTree(trainingExamples, atts);
+				
+				if (Arrays.asList(args).contains("--printTree"))
+					d.printTree(decisionTree);
+				
 				d.classifyExamples(decisionTree, testingExamples, atts);
 			} else if (mode.equals("NB")) {
 				NaiveBayesClassifier.naiveBayes(testingExamples, false);

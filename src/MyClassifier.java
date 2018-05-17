@@ -61,6 +61,7 @@ public class MyClassifier {
 				
 				d.classifyExamples(decisionTree, testingExamples, atts);
 			} else if (mode.equals("NB")) {
+				NaiveBayesClassifier.data = trainingExamples;
 				NaiveBayesClassifier.naiveBayes(testingExamples, false);
 			}
 		}

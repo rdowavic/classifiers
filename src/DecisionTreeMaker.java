@@ -3,6 +3,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 import java.util.Arrays;
+import java.util.Map.Entry;
 
 public class DecisionTreeMaker {
 	
@@ -56,7 +57,6 @@ public class DecisionTreeMaker {
 			}
 		}
 		// has no children, so must be the answer
-		// this should be yes or no, fucking fingers crossed bro
 		return current.data;
 	}
 	
@@ -87,8 +87,13 @@ public class DecisionTreeMaker {
 		// default value is one of these
 		if (examples.isEmpty())
 			return new Node(defaultValue);
+		// else if all examples have the same class, return the classification
+		String classification = allSameClass(examples);
+		if (classification != null) {
+			return new Node(classification);
+		}
 		else if (attributes.isEmpty()) {
-			return new Node(majorityClass(examples, allAttributes));
+			return new Node(majorityClass(examples));
 		}
 		else {
 			String best = chooseAttribute(attributes, allAttributes, examples);
@@ -111,7 +116,7 @@ public class DecisionTreeMaker {
 						childExamples, 
 						attsWithBestRemoved,
 						allAttributes,
-						majorityClass(examples, allAttributes)
+						majorityClass(examples)
 				);
 				
 				// adding a branch to tree with label v_i and subtree `subtree` :)
@@ -119,6 +124,24 @@ public class DecisionTreeMaker {
 			}
 			return tree;
 		}
+	}
+	
+	/**
+	 * 
+	 * @param examples - the list of examples that we hope have the same class (are all yes or all no)
+	 * @return the classification "yes"/"no" if they are all the same. If they aren't, return null.
+	 */
+	private String allSameClass(ArrayList<String[]> examples) {
+		// the length-1 is the class line
+		int CLASS = examples.get(0).length - 1;
+		// the first one's class
+		String classifiedAs = examples.get(0)[CLASS];
+		
+		for (String[] example : examples) {
+			if (!example[CLASS].equals(classifiedAs))
+				return null;
+		}		
+		return classifiedAs;
 	}
 	
 	/**
@@ -279,11 +302,18 @@ public class DecisionTreeMaker {
 	 * frequently occurring class, will be either yes or no.
 	 * @return
 	 */
-	private String majorityClass(ArrayList<String[]> examples, ArrayList<String> attributes) {
-		ArrayList<String> classes = new ArrayList<String>();
-		for (String[] example : examples)
-			classes.add(example[columnNum("class", attributes)]);
-		return mode(classes);
+	private String majorityClass(ArrayList<String[]> examples) {
+		int CLASS = examples.get(0).length - 1;
+		int countYes = 0, countNo = 0;
+		
+		for (String[] example : examples) {
+			if (example[CLASS].equals("yes"))
+				countYes++;
+			else
+				countNo++;
+		}
+
+		return (countYes >= countNo) ? "yes" : "no";
 	}
 	
 	/**
@@ -298,6 +328,10 @@ public class DecisionTreeMaker {
 	          valueCount.put(value, 0);
 	      valueCount.put(value, valueCount.get(value) + 1);
 	    }
+	    
+	    for (Entry<String, Integer> entry : valueCount.entrySet()) {
+	    	System.out.println(entry.getKey() + ": " + entry.getValue());
+	    }
 
 	    // finding the most commonly occurring one
 	    Map.Entry<String, Integer> mostFrequent = null;
@@ -306,6 +340,7 @@ public class DecisionTreeMaker {
 	      if (mostFrequent == null || entry.getValue() > mostFrequent.getValue())
 	        mostFrequent = entry;
 	    }
+	    System.out.println("Chose " + mostFrequent.getKey());
 	    return mostFrequent.getKey();
 	}
 	

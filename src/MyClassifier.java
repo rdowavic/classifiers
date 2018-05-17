@@ -50,7 +50,7 @@ public class MyClassifier {
 			String mode = args[2];
 			ArrayList<String[]> trainingExamples = readExamples(trainingFilePath);
 			ArrayList<String[]> testingExamples = readExamples(testingFilePath);
-			ArrayList<String> atts = trainingExamples.get(0).length < 8 ? CFSattributes : attributes;
+			ArrayList<String> atts = trainingExamples.get(0).length < 7 ? CFSattributes : attributes;
 			
 			if (mode.equals("DT")) {
 				DecisionTreeMaker d = new DecisionTreeMaker();

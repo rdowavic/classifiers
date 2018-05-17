@@ -16,6 +16,7 @@ public class DecisionTreeMaker {
 		printTree(root, 0);
 		System.out.println();
 	}
+	
 	private void printTree(Node root, int indent) {
 		String offset = "";
 		for (int i = 0; i < indent; i++) offset += "|  ";
@@ -186,7 +187,7 @@ public class DecisionTreeMaker {
 	
 	private double informationGain(int attrIndex, ArrayList<String[]> examples, ArrayList<String> attributes) {
 		/*
-		 * Gain(examples | attr) = information gain = I(
+		 * Gain(examples | attr) = information gain = H(S) - H(S | A = v_j)
 		 */
 		return Entropy(examples, attributes) - Reminder(attrIndex, examples, attributes);
 	}
@@ -205,14 +206,16 @@ public class DecisionTreeMaker {
 	 */
 	private double Reminder(int attrIndex, ArrayList<String[]> examples, ArrayList<String> attributes) {
 		double total = 0;
+		double numExamples = examples.size();
 		
 		for (String value : allValues(attrIndex, examples)) {
-			double probValue = count(examples, attrIndex, value) / (double) examples.size();
 			// get the list of examples such that example[attrIndex] == value
 			ArrayList<String[]> onesWithThisValue = reducedExamples(examples, attrIndex, value);
-			total += probValue * Entropy(onesWithThisValue, attributes);
+			double count = onesWithThisValue.size();
+			double entropyOnThisValue = Entropy(onesWithThisValue, attributes);
+			total += count * entropyOnThisValue;
 		}
-		return total;
+		return total / numExamples;
 	}
 	
 	/**
@@ -258,9 +261,9 @@ public class DecisionTreeMaker {
 			 * H(M) = -Sigma P_i * log2(P_i) = entropy(M)
 			 * 
 			 */
-			result += Pi * Math.log(Pi) / Math.log(2);
+			result -= (Pi * Math.log(Pi) / Math.log(2));
 		}
-		return -1 * result;
+		return result;
 	}
 	
 	/**
@@ -315,34 +318,4 @@ public class DecisionTreeMaker {
 
 		return (countYes >= countNo) ? "yes" : "no";
 	}
-	
-	/**
-	 * 
-	 * @param values - an array list of strings
-	 * @return the most frequently occurring string in the array list
-	 */
-	private String mode(ArrayList<String> values) {
-		Map<String, Integer> valueCount = new HashMap<String, Integer>();
-	    for (String value : values) {
-	      if (!valueCount.containsKey(value))
-	          valueCount.put(value, 0);
-	      valueCount.put(value, valueCount.get(value) + 1);
-	    }
-	    
-	    for (Entry<String, Integer> entry : valueCount.entrySet()) {
-	    	System.out.println(entry.getKey() + ": " + entry.getValue());
-	    }
-
-	    // finding the most commonly occurring one
-	    Map.Entry<String, Integer> mostFrequent = null;
-
-	    for (Map.Entry<String, Integer> entry : valueCount.entrySet()) {
-	      if (mostFrequent == null || entry.getValue() > mostFrequent.getValue())
-	        mostFrequent = entry;
-	    }
-	    System.out.println("Chose " + mostFrequent.getKey());
-	    return mostFrequent.getKey();
-	}
-	
-	
 }

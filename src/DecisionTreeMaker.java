@@ -75,7 +75,7 @@ public class DecisionTreeMaker {
 		// get rid of class from attributes
 		ArrayList<String> attributesWithoutClass = new ArrayList<String>(atts);
 		attributesWithoutClass.remove("class");
-		return makeDecisionTree(examples, attributesWithoutClass, atts, null);
+		return makeDecisionTree(examples, attributesWithoutClass, atts, "yes");
 	}
 
 	/**
@@ -189,7 +189,10 @@ public class DecisionTreeMaker {
 		/*
 		 * Gain(examples | attr) = information gain = H(S) - H(S | A = v_j)
 		 */
-		return Entropy(examples, attributes) - Reminder(attrIndex, examples, attributes);
+		double entropy = Entropy(examples, attributes);
+		double reminder = Reminder(attrIndex, examples, attributes);
+		
+		return entropy - reminder;
 	}
 	
 	/**
@@ -213,6 +216,9 @@ public class DecisionTreeMaker {
 			ArrayList<String[]> onesWithThisValue = reducedExamples(examples, attrIndex, value);
 			double count = onesWithThisValue.size();
 			double entropyOnThisValue = Entropy(onesWithThisValue, attributes);
+			if (Double.isNaN(entropyOnThisValue)) {
+				System.out.println("Entropy on " + value + ": " + entropyOnThisValue);
+			}
 			total += count * entropyOnThisValue;
 		}
 		return total / numExamples;
@@ -261,6 +267,9 @@ public class DecisionTreeMaker {
 			 * H(M) = -Sigma P_i * log2(P_i) = entropy(M)
 			 * 
 			 */
+			if (Pi == 0.0)
+				continue;
+			
 			result -= (Pi * Math.log(Pi) / Math.log(2));
 		}
 		return result;
